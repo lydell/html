@@ -159,6 +159,22 @@ property =
   VirtualDom.property
 
 
+{-| This is used for attributes that have a property that:
+
+- Is boolean.
+- Defaults to `false`.
+- Removes the attribute when setting to `false`.
+
+Note:
+
+- Some properties, like `checked`, can be modified by the user.
+- `.setAttribute(property, "false")` does not set the property to `false` – we have to remove the attribute. (Except `spellcheck` which explicitly has a "false" (and "true") value.)
+
+Consider `hidden : Bool -> Attribute msg`. When that `Bool` is `True`, we could implement the function with `attribute "hidden" ""`. (Using the empty string seems to be “canonical”, but any string would make the element hidden.) But what do we do when the `Bool` is `False`? The intention is to make the element _not_ hidden. The only way of doing that is to remove the `hidden` attribute, but we cannot do that with `attribute` – it always results in the attribute being present (we can only choose its value, but no value will result in the element _not_ being hidden). To keep this API, we _have_ to use the `hidden` _property_ instead, which (like mentioned above) automatically removes the attribute when set to `false`.
+
+An alternative would be to have `hidden : Attribute msg` and let users do `if shouldHide then hidden else ???` where `???` would have to be a way to express a no-op `Attribute msg`, or the user has to resort to list manipulation.
+
+-}
 boolProperty : String -> Bool -> Attribute msg
 boolProperty key bool =
   Elm.Kernel.VirtualDom.property key (Json.bool bool)
@@ -232,10 +248,16 @@ accesskey char =
   Elm.Kernel.VirtualDom.attribute "accesskey" (String.fromChar char)
 
 
-{-| Indicates whether the element's content is editable. -}
+{-| Indicates whether the element's content is editable.
+
+Note: These days, the autocomplete attribute can take more values than a boolean, like "inherit" and "plaintext-only". You can set those values like this:
+
+    attribute "contenteditable" "inherit"
+-}
 contenteditable : Bool -> Attribute msg
 contenteditable =
-  boolProperty "contentEditable"
+  -- Note: `node.contentEditable = 'bad'` thrown an error!
+  Elm.Kernel.VirtualDom.attribute "contenteditable" (if bool then "true" else "false")
 
 
 {-| Defines the ID of a `menu` element which will serve as the element's
@@ -283,8 +305,11 @@ lang =
 
 {-| Indicates whether spell checking is allowed for the element. -}
 spellcheck : Bool -> Attribute msg
-spellcheck =
-  boolProperty "spellcheck"
+spellcheck bool =
+  -- Note: The spellcheck _property_ defaults to `true`, unlike other boolean properties.
+  -- Setting it back to the default value does _not_ remove the attribute.
+  -- Because of this, we set it using an attribute instead.
+  Elm.Kernel.VirtualDom.attribute "spellcheck" (if bool then "true" else "false")
 
 
 {-| Overrides the browser's default tab order and follows the one specified
@@ -436,6 +461,8 @@ type_ =
 -}
 value : String -> Attribute msg
 value string =
+  -- Note: `.value` has no corresponding attribute. It can also be modified by
+  -- the user by typing in inputs.
   Elm.Kernel.VirtualDom.property "value" (Json.string string)
 
 
