@@ -255,7 +255,7 @@ Note: These days, the autocomplete attribute can take more values than a boolean
     attribute "contenteditable" "inherit"
 -}
 contenteditable : Bool -> Attribute msg
-contenteditable =
+contenteditable bool =
   -- Note: `node.contentEditable = 'bad'` thrown an error!
   Elm.Kernel.VirtualDom.attribute "contenteditable" (if bool then "true" else "false")
 
