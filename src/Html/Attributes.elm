@@ -321,7 +321,7 @@ instead.
 -}
 tabindex : Int -> Attribute msg
 tabindex n =
-  Elm.Kernel.VirtualDom.attribute "tabIndex" (String.fromInt n)
+  Elm.Kernel.VirtualDom.attribute "tabindex" (String.fromInt n)
 
 
 
@@ -570,7 +570,7 @@ list =
 -}
 minlength : Int -> Attribute msg
 minlength n =
-  Elm.Kernel.VirtualDom.attribute "minLength" (String.fromInt n)
+  Elm.Kernel.VirtualDom.attribute "minlength" (String.fromInt n)
 
 
 {-| Defines the maximum number of characters allowed in an `input` or
